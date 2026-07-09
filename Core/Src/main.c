@@ -21,7 +21,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "gps.h"
+#include "printf.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -99,7 +100,13 @@ int main(void)
   MX_USART1_UART_Init();
   MX_LPUART1_UART_Init();
   /* USER CODE BEGIN 2 */
+  LL_LPUART_Enable(LPUART1);
 
+  LL_mDelay(500);
+  switch_ubx();
+  n_printf("ℹ️ System initilized\n");
+
+  LL_LPUART_EnableIT_RXNE(LPUART1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -300,7 +307,7 @@ static void MX_LPUART1_UART_Init(void)
   /* USER CODE BEGIN LPUART1_Init 1 */
 
   /* USER CODE END LPUART1_Init 1 */
-  LPUART_InitStruct.BaudRate = 38400;
+  LPUART_InitStruct.BaudRate = 9600;
   LPUART_InitStruct.DataWidth = LL_LPUART_DATAWIDTH_8B;
   LPUART_InitStruct.StopBits = LL_LPUART_STOPBITS_1;
   LPUART_InitStruct.Parity = LL_LPUART_PARITY_NONE;
@@ -468,13 +475,7 @@ static void MX_GPIO_Init(void)
   LL_GPIO_ResetOutputPin(OUT_LPS_CS_GPIO_Port, OUT_LPS_CS_Pin);
 
   /**/
-  LL_GPIO_ResetOutputPin(OUT_RF_Boost_GPIO_Port, OUT_RF_Boost_Pin);
-
-  /**/
   LL_GPIO_ResetOutputPin(OUT_ADF_TX_TIM__GPIO_Port, OUT_ADF_TX_TIM__Pin);
-
-  /**/
-  LL_GPIO_ResetOutputPin(OUT_GPS_ON_GPIO_Port, OUT_GPS_ON_Pin);
 
   /**/
   LL_GPIO_ResetOutputPin(OUT_RADIO_EN_GPIO_Port, OUT_RADIO_EN_Pin);
@@ -487,9 +488,6 @@ static void MX_GPIO_Init(void)
 
   /**/
   LL_GPIO_ResetOutputPin(OUT_ADF_LE_GPIO_Port, OUT_ADF_LE_Pin);
-
-  /**/
-  LL_GPIO_ResetOutputPin(OUT_POWER_ON_GPIO_Port, OUT_POWER_ON_Pin);
 
   /**/
   LL_GPIO_ResetOutputPin(OUT_ADF_CE_GPIO_Port, OUT_ADF_CE_Pin);
@@ -508,6 +506,15 @@ static void MX_GPIO_Init(void)
 
   /**/
   LL_GPIO_ResetOutputPin(OUT_NTC_330k_GPIO_Port, OUT_NTC_330k_Pin);
+
+  /**/
+  LL_GPIO_SetOutputPin(OUT_RF_Boost_GPIO_Port, OUT_RF_Boost_Pin);
+
+  /**/
+  LL_GPIO_SetOutputPin(OUT_GPS_ON_GPIO_Port, OUT_GPS_ON_Pin);
+
+  /**/
+  LL_GPIO_SetOutputPin(OUT_POWER_ON_GPIO_Port, OUT_POWER_ON_Pin);
 
   /**/
   GPIO_InitStruct.Pin = IN_BUTTON_Pin;

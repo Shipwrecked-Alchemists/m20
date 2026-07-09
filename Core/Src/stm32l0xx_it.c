@@ -22,6 +22,7 @@
 #include "stm32l0xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "gps.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -41,7 +42,10 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
-
+uint8_t gps_buf[128];
+int gps_idx = 0;
+int to_read = 0;
+int reading = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -146,7 +150,38 @@ void SysTick_Handler(void)
 void LPUART1_IRQHandler(void)
 {
   /* USER CODE BEGIN LPUART1_IRQn 0 */
+  if (LL_LPUART_IsActiveFlag_RXNE(LPUART1) && LL_LPUART_IsEnabledIT_RXNE(LPUART1)) {
+    uint8_t c = LL_LPUART_ReceiveData8(LPUART1);
 
+    if (reading == 0 && c == 0xb5) {
+      reading = 1;
+      gps_idx = 0;
+      gps_buf[gps_idx++] = c;
+    } else if (reading == 1) {
+      if (gps_idx == 1 && c != 0x62) {
+        reading = 0;
+      } else {
+        gps_buf[gps_idx++] = c;
+        if (gps_idx <= 6) {
+          if (gps_idx == 6) {
+            to_read = (gps_buf[5] << 8) | gps_buf[4];
+            to_read += 2;
+            if (to_read > 127) reading = 0;
+          }
+        } else {
+          to_read--;
+          if (to_read == 0) {
+            parse_ubx(gps_buf+2);
+            gps_idx = 0;
+            reading = 0;
+          }
+        }
+      }
+    }
+  }
+  if (LL_LPUART_IsActiveFlag_ORE(LPUART1)) {
+    LL_LPUART_ClearFlag_ORE(LPUART1);
+  }
   /* USER CODE END LPUART1_IRQn 0 */
   /* USER CODE BEGIN LPUART1_IRQn 1 */
 
