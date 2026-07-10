@@ -23,6 +23,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "gps.h"
+#include "printf.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -46,6 +47,10 @@ uint8_t gps_buf[128];
 int gps_idx = 0;
 int to_read = 0;
 int reading = 0;
+
+int tim_tick = 0;
+uint32_t tim1, tim2;
+uint32_t tim_diff;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -143,6 +148,41 @@ void SysTick_Handler(void)
 /* For the available peripheral interrupt handler names,                      */
 /* please refer to the startup file (startup_stm32l0xx.s).                    */
 /******************************************************************************/
+
+/**
+  * @brief This function handles TIM22 global interrupt.
+  */
+void TIM22_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM22_IRQn 0 */
+  if (LL_TIM_IsActiveFlag_CC1(TIM22)) {
+    LL_TIM_ClearFlag_CC1(TIM22);
+
+    if (tim_tick == 0) {
+      tim1 = LL_TIM_IC_GetCaptureCH1(TIM22);
+    }
+    tim_tick++;
+
+    if (tim_tick > 51) {
+      tim2 = LL_TIM_IC_GetCaptureCH1(TIM22);
+
+      if (tim2 >= tim1)
+        tim_diff = tim2 - tim1;
+      else
+        tim_diff = (0xFFFF - tim1) + tim2 + 1;
+
+      float freq = (2000000.0f * 51) / tim_diff;
+      n_printf("💧 Hum %.3f\n", freq);
+
+      tim_tick = 0;
+    }
+  }
+
+  /* USER CODE END TIM22_IRQn 0 */
+  /* USER CODE BEGIN TIM22_IRQn 1 */
+
+  /* USER CODE END TIM22_IRQn 1 */
+}
 
 /**
   * @brief This function handles LPUART1 global interrupt / LPUART1 wake-up interrupt through EXTI line 28.

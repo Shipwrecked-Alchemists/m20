@@ -1,13 +1,13 @@
-| Component     | Status | Description |
-|---------------|--------|-------------|
-| GPS M10M      | V      | POS GS TIME |
-| LPS22HB B&T   | V      | Press Temp  |
-| Vbat          | X      |             |
-| Radio AD7012B | X      |             |
-| Humidity      | X      |             |
-| NTC           | X      |             |
-| IR            | X      |             |
-| UART          | X      |             |
+| Component     | Status | Description     |
+|---------------|--------|-----------------|
+| GPS M10M      | V      | POS GS TIME     |
+| LPS22HB B&T   | V      | Press Temp      |
+| Vbat          | V      | Battery Voltage |
+| Radio AD7012B | X      |                 |
+| Humidity      | ~      | Frequency       |
+| NTC           | X      |                 |
+| IR            | X      |                 |
+| UART          | X      |                 |
 
 ```c
 typedef struct m20_frame {

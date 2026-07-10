@@ -54,13 +54,21 @@ static void MX_ADC_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_LPUART1_UART_Init(void);
+static void MX_TIM22_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+float vbat() {
+  LL_ADC_REG_SetSequencerChannels(ADC1, LL_ADC_CHANNEL_8);
+  LL_ADC_REG_StartConversion(ADC1);
+  while (!LL_ADC_IsActiveFlag_EOC(ADC1)) {}
+  uint16_t adc = LL_ADC_REG_ReadConversionData12(ADC1);
+  LL_ADC_ClearFlag_EOC(ADC1);
+  return adc * 3.3f / 4095;
+}
 /* USER CODE END 0 */
 
 /**
@@ -100,9 +108,14 @@ int main(void)
   MX_SPI1_Init();
   MX_USART1_UART_Init();
   MX_LPUART1_UART_Init();
+  MX_TIM22_Init();
   /* USER CODE BEGIN 2 */
   LL_LPUART_Enable(LPUART1);
   LL_SPI_Enable(SPI1);
+  LL_TIM_EnableIT_CC1(TIM22);
+  LL_TIM_CC_EnableChannel(TIM22, LL_TIM_CHANNEL_CH1);
+  LL_TIM_EnableCounter(TIM22);
+  LL_ADC_Enable(ADC1);
 
   LL_mDelay(500);
   switch_ubx();
@@ -122,7 +135,7 @@ int main(void)
   {
     n_printf("ℹ️ Pressure : %.4fhPa\n", lps_press());
     n_printf("ℹ️ Temperature : %.2fC\n", lps_temp());
-
+    n_printf("⚡ Vbat %.2f\n", vbat());
     LL_mDelay(1000);
     /* USER CODE END WHILE */
 
@@ -462,6 +475,63 @@ static void MX_SPI1_Init(void)
 }
 
 /**
+  * @brief TIM22 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM22_Init(void)
+{
+
+  /* USER CODE BEGIN TIM22_Init 0 */
+
+  /* USER CODE END TIM22_Init 0 */
+
+  LL_TIM_InitTypeDef TIM_InitStruct = {0};
+
+  LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+  /* Peripheral clock enable */
+  LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_TIM22);
+
+  LL_IOP_GRP1_EnableClock(LL_IOP_GRP1_PERIPH_GPIOC);
+  /**TIM22 GPIO Configuration
+  PC6   ------> TIM22_CH1
+  */
+  GPIO_InitStruct.Pin = IN_HUMIDITY_Pin;
+  GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
+  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
+  GPIO_InitStruct.Alternate = LL_GPIO_AF_0;
+  LL_GPIO_Init(IN_HUMIDITY_GPIO_Port, &GPIO_InitStruct);
+
+  /* TIM22 interrupt Init */
+  NVIC_SetPriority(TIM22_IRQn, 0);
+  NVIC_EnableIRQ(TIM22_IRQn);
+
+  /* USER CODE BEGIN TIM22_Init 1 */
+
+  /* USER CODE END TIM22_Init 1 */
+  TIM_InitStruct.Prescaler = 0;
+  TIM_InitStruct.CounterMode = LL_TIM_COUNTERMODE_UP;
+  TIM_InitStruct.Autoreload = 65535;
+  TIM_InitStruct.ClockDivision = LL_TIM_CLOCKDIVISION_DIV1;
+  LL_TIM_Init(TIM22, &TIM_InitStruct);
+  LL_TIM_DisableARRPreload(TIM22);
+  LL_TIM_SetClockSource(TIM22, LL_TIM_CLOCKSOURCE_INTERNAL);
+  LL_TIM_SetTriggerOutput(TIM22, LL_TIM_TRGO_RESET);
+  LL_TIM_DisableMasterSlaveMode(TIM22);
+  LL_TIM_IC_SetActiveInput(TIM22, LL_TIM_CHANNEL_CH1, LL_TIM_ACTIVEINPUT_DIRECTTI);
+  LL_TIM_IC_SetPrescaler(TIM22, LL_TIM_CHANNEL_CH1, LL_TIM_ICPSC_DIV1);
+  LL_TIM_IC_SetFilter(TIM22, LL_TIM_CHANNEL_CH1, LL_TIM_IC_FILTER_FDIV1);
+  LL_TIM_IC_SetPolarity(TIM22, LL_TIM_CHANNEL_CH1, LL_TIM_IC_POLARITY_RISING);
+  /* USER CODE BEGIN TIM22_Init 2 */
+
+  /* USER CODE END TIM22_Init 2 */
+
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -484,6 +554,9 @@ static void MX_GPIO_Init(void)
 
   /**/
   LL_GPIO_ResetOutputPin(OUT_LPS_CS_GPIO_Port, OUT_LPS_CS_Pin);
+
+  /**/
+  LL_GPIO_ResetOutputPin(GPIOC, LL_GPIO_PIN_5);
 
   /**/
   LL_GPIO_ResetOutputPin(OUT_ADF_TX_TIM__GPIO_Port, OUT_ADF_TX_TIM__Pin);
@@ -554,6 +627,14 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
   LL_GPIO_Init(OUT_LPS_CS_GPIO_Port, &GPIO_InitStruct);
+
+  /**/
+  GPIO_InitStruct.Pin = LL_GPIO_PIN_5;
+  GPIO_InitStruct.Mode = LL_GPIO_MODE_OUTPUT;
+  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
+  LL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /**/
   GPIO_InitStruct.Pin = OUT_RF_Boost_Pin;

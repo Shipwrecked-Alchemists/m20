@@ -39,6 +39,7 @@ extern "C" {
 #include "stm32l0xx_ll_pwr.h"
 #include "stm32l0xx_ll_dma.h"
 #include "stm32l0xx_ll_spi.h"
+#include "stm32l0xx_ll_tim.h"
 #include "stm32l0xx_ll_usart.h"
 #include "stm32l0xx_ll_gpio.h"
 
@@ -102,6 +103,8 @@ void Error_Handler(void);
 #define OUT_GPS_ON_GPIO_Port GPIOB
 #define OUT_RADIO_EN_Pin LL_GPIO_PIN_15
 #define OUT_RADIO_EN_GPIO_Port GPIOB
+#define IN_HUMIDITY_Pin LL_GPIO_PIN_6
+#define IN_HUMIDITY_GPIO_Port GPIOC
 #define OUT_ADF_CLK_Pin LL_GPIO_PIN_7
 #define OUT_ADF_CLK_GPIO_Port GPIOC
 #define OUT_ADF_Data_Pin LL_GPIO_PIN_8
