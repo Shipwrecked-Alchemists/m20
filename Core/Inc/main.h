@@ -84,6 +84,12 @@ void Error_Handler(void);
 #define IN_IR_GPIO_Port GPIOA
 #define OUT_LPS_CS_Pin LL_GPIO_PIN_4
 #define OUT_LPS_CS_GPIO_Port GPIOA
+#define OUT_LPS_SCK_Pin LL_GPIO_PIN_5
+#define OUT_LPS_SCK_GPIO_Port GPIOA
+#define IN_LPS_MISO_Pin LL_GPIO_PIN_6
+#define IN_LPS_MISO_GPIO_Port GPIOA
+#define OUT_LPS_MOSI_Pin LL_GPIO_PIN_7
+#define OUT_LPS_MOSI_GPIO_Port GPIOA
 #define ADC_NTC_Pin LL_GPIO_PIN_4
 #define ADC_NTC_GPIO_Port GPIOC
 #define ADC_BAT_Pin LL_GPIO_PIN_0

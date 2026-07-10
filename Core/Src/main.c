@@ -22,6 +22,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "gps.h"
+#include "lps22.h"
 #include "printf.h"
 /* USER CODE END Includes */
 
@@ -101,9 +102,15 @@ int main(void)
   MX_LPUART1_UART_Init();
   /* USER CODE BEGIN 2 */
   LL_LPUART_Enable(LPUART1);
+  LL_SPI_Enable(SPI1);
 
   LL_mDelay(500);
   switch_ubx();
+  for (int i = 0; i < 5; i++) {
+    n_printf("⌛ LPS try %d ...\n", i);
+    if (lps22_init() == 0) break;
+    LL_mDelay(100);
+  }
   n_printf("ℹ️ System initilized\n");
 
   LL_LPUART_EnableIT_RXNE(LPUART1);
@@ -113,6 +120,10 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+    n_printf("ℹ️ Pressure : %.4fhPa\n", lps_press());
+    n_printf("ℹ️ Temperature : %.2fC\n", lps_temp());
+
+    LL_mDelay(1000);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -404,29 +415,29 @@ static void MX_SPI1_Init(void)
   PA6   ------> SPI1_MISO
   PA7   ------> SPI1_MOSI
   */
-  GPIO_InitStruct.Pin = LL_GPIO_PIN_5;
+  GPIO_InitStruct.Pin = OUT_LPS_SCK_Pin;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
   GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_VERY_HIGH;
   GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
   GPIO_InitStruct.Alternate = LL_GPIO_AF_0;
-  LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  LL_GPIO_Init(OUT_LPS_SCK_GPIO_Port, &GPIO_InitStruct);
 
-  GPIO_InitStruct.Pin = LL_GPIO_PIN_6;
+  GPIO_InitStruct.Pin = IN_LPS_MISO_Pin;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
   GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_VERY_HIGH;
   GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
   GPIO_InitStruct.Alternate = LL_GPIO_AF_0;
-  LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  LL_GPIO_Init(IN_LPS_MISO_GPIO_Port, &GPIO_InitStruct);
 
-  GPIO_InitStruct.Pin = LL_GPIO_PIN_7;
+  GPIO_InitStruct.Pin = OUT_LPS_MOSI_Pin;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
   GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_VERY_HIGH;
   GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
   GPIO_InitStruct.Alternate = LL_GPIO_AF_0;
-  LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  LL_GPIO_Init(OUT_LPS_MOSI_GPIO_Port, &GPIO_InitStruct);
 
   /* USER CODE BEGIN SPI1_Init 1 */
 
