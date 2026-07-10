@@ -92,6 +92,7 @@ void switch_ubx() {
     };
     lpuart_send(msg2, 16);
 
+    /*
     uint8_t msg3[] = {
         0xb5, 0x62,
         0x06, 0x01,
@@ -103,6 +104,7 @@ void switch_ubx() {
         0x46, 0x23
     };
     lpuart_send(msg3, 16);
+    */
 
     LL_LPUART_ClearFlag_ORE(LPUART1);
     LL_LPUART_ClearFlag_FE(LPUART1);
@@ -126,7 +128,17 @@ int32_t i32(uint8_t *b) {
     return b[0] | (b[1] << 8) | (b[2] << 16) | (b[3] << 24);
 }
 
-typedef enum {NAV_PVT = 7, NAV_SAT = 35, NAV_TIMEGPS = 20} frame_t;
+struct {
+    uint32_t time; // Unix timestamp
+
+    uint32_t lat;
+    uint32_t lon;
+    uint16_t alt;
+
+    uint16_t vel_h;
+} frame_part;
+
+typedef enum {NAV_PVT = 7, NAV_TIMEGPS = 20} frame_t;
 void parse_ubx(uint8_t* buf) {
     LL_LPUART_DisableIT_RXNE(LPUART1);
     n_printf("⌛ Parsing UBX packet ...\n");
@@ -134,10 +146,6 @@ void parse_ubx(uint8_t* buf) {
     uint8_t id = buf[1];
     uint16_t len = (uint16_t)(buf[2] | (buf[3] << 8));
     uint8_t* payload = &buf[4];
-    for (int i = 0; i < len; i++) {
-        n_printf("%02x ", payload[i]);
-    }
-    n_printf("\n");
     uint16_t crc = *(uint16_t*)&buf[4 + len];
 
     n_printf("⚙️ Class : 0x%02X\n", class);
@@ -151,15 +159,32 @@ void parse_ubx(uint8_t* buf) {
                 n_printf("⚠️ No valid lat/lon/height/hMSL\n");
                 break;
             }
-            n_printf("🌍 lon: %.5f\n", i32(&payload[24]) / 1e7f);
-            n_printf("🌍 lat: %.5f\n", i32(&payload[28]) / 1e7f);
-            n_printf("🌍 height: %.1f\n", i32(&payload[32]) / 1e3f);
+            uint32_t lon = i32(&payload[24]);
+            uint32_t lat = i32(&payload[28]);
+            uint32_t alt = i32(&payload[32]);
+            uint32_t vel_h = i32(&payload[60]);
+            frame_part.lon = lon;
+            frame_part.lat = lat;
+            frame_part.alt = alt;
+            frame_part.vel_h = vel_h;
 
-            n_printf("⚡ ground_speed: %.1f\n", i32(&payload[60]) / 1e3f);
-        case NAV_SAT:
-            break;
+            n_printf("🌍 Lon: %.5f\n", lon / 1e7f);
+            n_printf("🌍 Lat: %.5f\n", lat / 1e7f);
+            n_printf("🌍 Height: %.1f\n", alt / 1e3f);
+
+            n_printf("⚡ Ground speed: %.1fX\n", vel_h / 1e3f);
         case NAV_TIMEGPS:
-            break;
+            uint32_t iTOW = u32(&payload[0]);
+            int32_t fTOW  = i32(&payload[4]);
+            int16_t week = i16(&payload[8]);
+            int8_t leaps = payload[10];
+
+            uint32_t sow = (iTOW * 1e-3) + ((uint32_t) fTOW * 1e-9); // second of
+            uint32_t s = (uint32_t)week * 604800 + sow;
+
+            uint32_t timestamp = 315964800 + s - (uint32_t)leaps;
+            frame_part.time = timestamp;
+            n_printf("🕰️ Timestamp : %u\n", timestamp);
         }
     }
     n_printf("\n");
