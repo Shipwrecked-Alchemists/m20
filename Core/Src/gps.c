@@ -5,7 +5,6 @@
 #include "main.h"
 #include "stm32l0xx_ll_gpio.h"
 #include "stm32l0xx_ll_lpuart.h"
-#include "stm32l0xx_ll_usart.h"
 #include "printf.h"
 // Protocol version 32.01
 
@@ -138,7 +137,7 @@ struct {
     uint16_t vel_h;
 } frame_part;
 
-typedef enum {NAV_PVT = 7, NAV_TIMEGPS = 20} frame_t;
+typedef enum {NAV_PVT = 7, NAV_TIMEGPS = 0x20} frame_t;
 void parse_ubx(uint8_t* buf) {
     LL_LPUART_DisableIT_RXNE(LPUART1);
     n_printf("⌛ Parsing UBX packet ...\n");
@@ -172,7 +171,8 @@ void parse_ubx(uint8_t* buf) {
             n_printf("🌍 Lat: %.5f\n", lat / 1e7f);
             n_printf("🌍 Height: %.1f\n", alt / 1e3f);
 
-            n_printf("⚡ Ground speed: %.1fX\n", vel_h / 1e3f);
+            n_printf("⚡ Ground speed: %.1fm/s\n", vel_h / 1e3f);
+            break;
         case NAV_TIMEGPS:
             uint32_t iTOW = u32(&payload[0]);
             int32_t fTOW  = i32(&payload[4]);
