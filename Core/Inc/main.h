@@ -91,10 +91,10 @@ void Error_Handler(void);
 #define IN_LPS_MISO_GPIO_Port GPIOA
 #define OUT_LPS_MOSI_Pin LL_GPIO_PIN_7
 #define OUT_LPS_MOSI_GPIO_Port GPIOA
-#define ADC_NTC_Pin LL_GPIO_PIN_4
-#define ADC_NTC_GPIO_Port GPIOC
-#define ADC_BAT_Pin LL_GPIO_PIN_0
-#define ADC_BAT_GPIO_Port GPIOB
+#define IN_ADC_NTC_Pin LL_GPIO_PIN_4
+#define IN_ADC_NTC_GPIO_Port GPIOC
+#define IN_ADC_BAT_Pin LL_GPIO_PIN_0
+#define IN_ADC_BAT_GPIO_Port GPIOB
 #define OUT_RF_Boost_Pin LL_GPIO_PIN_12
 #define OUT_RF_Boost_GPIO_Port GPIOB
 #define OUT_ADF_TX_TIM__Pin LL_GPIO_PIN_13

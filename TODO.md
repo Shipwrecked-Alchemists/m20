@@ -4,10 +4,10 @@
 | LPS22HB B&T   | V      | Press Temp      |
 | Vbat          | V      | Battery Voltage |
 | Radio AD7012B | X      |                 |
-| Humidity      | ~      | Frequency       |
-| NTC           | X      |                 |
+| Humidity      | V~     | Percent no cal  |
+| NTC           | ~      | ADC value       |
 | IR            | X      |                 |
-| UART          | X      |                 |
+| UART          | V      |                 |
 
 ```c
 typedef struct m20_frame {

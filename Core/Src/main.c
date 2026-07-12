@@ -23,6 +23,7 @@
 /* USER CODE BEGIN Includes */
 #include "gps.h"
 #include "lps22.h"
+#include "ntc.h"
 #include "printf.h"
 /* USER CODE END Includes */
 
@@ -136,6 +137,11 @@ int main(void)
     n_printf("ℹ️ Pressure : %.4fhPa\n", lps_press());
     n_printf("ℹ️ Temperature : %.2fC\n", lps_temp());
     n_printf("⚡ Vbat %.2f\n", vbat());
+    n_printf("🌡️NTC1 %d\n", ntc_rindex(0));
+    n_printf("🌡️NTC2 %d\n", ntc_rindex(1));
+    n_printf("🌡️NTC3 %d\n", ntc_rindex(2));
+    n_printf("🌡️NTC4 %d\n", ntc_rindex(3));
+    n_printf("🌡️NTC5 %d\n", ntc_rindex(4));
     LL_mDelay(1000);
     /* USER CODE END WHILE */
 
@@ -218,15 +224,15 @@ static void MX_ADC_Init(void)
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
   LL_GPIO_Init(ADC_PAYLOAD_GPIO_Port, &GPIO_InitStruct);
 
-  GPIO_InitStruct.Pin = ADC_NTC_Pin;
+  GPIO_InitStruct.Pin = IN_ADC_NTC_Pin;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_ANALOG;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
-  LL_GPIO_Init(ADC_NTC_GPIO_Port, &GPIO_InitStruct);
+  LL_GPIO_Init(IN_ADC_NTC_GPIO_Port, &GPIO_InitStruct);
 
-  GPIO_InitStruct.Pin = ADC_BAT_Pin;
+  GPIO_InitStruct.Pin = IN_ADC_BAT_Pin;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_ANALOG;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
-  LL_GPIO_Init(ADC_BAT_GPIO_Port, &GPIO_InitStruct);
+  LL_GPIO_Init(IN_ADC_BAT_GPIO_Port, &GPIO_InitStruct);
 
   /* USER CODE BEGIN ADC_Init 1 */
 
@@ -556,9 +562,6 @@ static void MX_GPIO_Init(void)
   LL_GPIO_ResetOutputPin(OUT_LPS_CS_GPIO_Port, OUT_LPS_CS_Pin);
 
   /**/
-  LL_GPIO_ResetOutputPin(GPIOC, LL_GPIO_PIN_5);
-
-  /**/
   LL_GPIO_ResetOutputPin(OUT_ADF_TX_TIM__GPIO_Port, OUT_ADF_TX_TIM__Pin);
 
   /**/
@@ -627,14 +630,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
   LL_GPIO_Init(OUT_LPS_CS_GPIO_Port, &GPIO_InitStruct);
-
-  /**/
-  GPIO_InitStruct.Pin = LL_GPIO_PIN_5;
-  GPIO_InitStruct.Mode = LL_GPIO_MODE_OUTPUT;
-  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
-  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
-  LL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /**/
   GPIO_InitStruct.Pin = OUT_RF_Boost_Pin;
@@ -721,7 +716,7 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pin = OUT_NTC_475k_Pin;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_OUTPUT;
   GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_OPENDRAIN;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
   LL_GPIO_Init(OUT_NTC_475k_GPIO_Port, &GPIO_InitStruct);
 
@@ -729,7 +724,7 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pin = OUT_NTC_36k_Pin;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_OUTPUT;
   GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_OPENDRAIN;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
   LL_GPIO_Init(OUT_NTC_36k_GPIO_Port, &GPIO_InitStruct);
 
@@ -737,7 +732,7 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pin = OUT_NTC_12k_Pin;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_OUTPUT;
   GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_OPENDRAIN;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
   LL_GPIO_Init(OUT_NTC_12k_GPIO_Port, &GPIO_InitStruct);
 
@@ -745,7 +740,7 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pin = OUT_NTC_2M_Pin;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_OUTPUT;
   GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_OPENDRAIN;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
   LL_GPIO_Init(OUT_NTC_2M_GPIO_Port, &GPIO_InitStruct);
 
@@ -753,7 +748,7 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pin = OUT_NTC_330k_Pin;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_OUTPUT;
   GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_OPENDRAIN;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
   LL_GPIO_Init(OUT_NTC_330k_GPIO_Port, &GPIO_InitStruct);
 
