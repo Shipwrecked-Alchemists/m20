@@ -172,7 +172,8 @@ void TIM22_IRQHandler(void)
         tim_diff = (0xFFFF - tim1) + tim2 + 1;
 
       float freq = (2000000.0f * 51) / tim_diff;
-      n_printf("💧 Hum %.3f\n", freq);
+      float hum = -0.1623*freq + 1037;
+      //n_printf("💧 Hum %.1f%%\n", hum);
 
       tim_tick = 0;
     }
