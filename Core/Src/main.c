@@ -137,11 +137,10 @@ int main(void)
     n_printf("ℹ️ Pressure : %.4fhPa\n", lps_press());
     n_printf("ℹ️ Temperature : %.2fC\n", lps_temp());
     n_printf("⚡ Vbat %.2f\n", vbat());
-    n_printf("🌡️NTC1 %d\n", ntc_rindex(0));
-    n_printf("🌡️NTC2 %d\n", ntc_rindex(1));
-    n_printf("🌡️NTC3 %d\n", ntc_rindex(2));
-    n_printf("🌡️NTC4 %d\n", ntc_rindex(3));
-    n_printf("🌡️NTC5 %d\n", ntc_rindex(4));
+    n_printf("🌡️NTC1 %.2fC\n", ntc_rindex(0));
+    n_printf("🌡️NTC2 %.2fC\n", ntc_rindex(1));
+    n_printf("🌡️NTC3 %.2fC\n", ntc_rindex(2));
+
     LL_mDelay(1000);
     /* USER CODE END WHILE */
 

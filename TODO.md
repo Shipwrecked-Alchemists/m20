@@ -4,8 +4,8 @@
 | LPS22HB B&T   | V      | Press Temp      |
 | Vbat          | V      | Battery Voltage |
 | Radio AD7012B | X      |                 |
-| Humidity      | V~     | Percent no cal  |
-| NTC           | ~      | ADC value       |
+| Humidity      | ~      | Need cal + temp |
+| NTC           | V      | Need validation |
 | IR            | X      |                 |
 | UART          | V      |                 |
 
@@ -29,4 +29,17 @@ typedef struct m20_frame {
 
     uint16_t crc;
 } m20_frame_t;
+```
+
+## NTC
+
+Using Steinhart–Hart equation
+
+```
+1/T = A + B*log(R) + C*log(R)^2 + D*log(R)^3
+
+A = 0.0010730351
+B = 0.0002412940
+C = 0.0000022675
+D = 0.0000000653
 ```
