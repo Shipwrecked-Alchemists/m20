@@ -18,10 +18,7 @@ float ntc_rindex(int index) {
     }
     LL_mDelay(10);
 
-    LL_ADC_REG_SetSequencerChannels(ADC1, LL_ADC_CHANNEL_14);
-    LL_ADC_REG_StartConversion(ADC1);
-    while (!LL_ADC_IsActiveFlag_EOC(ADC1)) {}
-    float adc = LL_ADC_REG_ReadConversionData12(ADC1);
+    float adc = read_adc(LL_ADC_CHANNEL_14);
 
     LL_GPIO_ResetOutputPin(ress[index].port_s, ress[index].pin_s);
     LL_GPIO_SetPinOutputType(ress[index].port_s, ress[index].pin_s, LL_GPIO_OUTPUT_OPENDRAIN);

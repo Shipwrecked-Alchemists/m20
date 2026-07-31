@@ -71,7 +71,7 @@ extern "C" {
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
-
+uint16_t read_adc(uint32_t channel);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
@@ -79,8 +79,12 @@ void Error_Handler(void);
 #define IN_BUTTON_GPIO_Port GPIOC
 #define OUT_LED_Pin LL_GPIO_PIN_14
 #define OUT_LED_GPIO_Port GPIOC
+#define OUT_NTC_RH_Pin LL_GPIO_PIN_15
+#define OUT_NTC_RH_GPIO_Port GPIOC
 #define ADC_PAYLOAD_Pin LL_GPIO_PIN_0
 #define ADC_PAYLOAD_GPIO_Port GPIOC
+#define IN_NTC_PCB_Pin LL_GPIO_PIN_2
+#define IN_NTC_PCB_GPIO_Port GPIOC
 #define IN_IR_Pin LL_GPIO_PIN_1
 #define IN_IR_GPIO_Port GPIOA
 #define OUT_LPS_CS_Pin LL_GPIO_PIN_4
@@ -93,6 +97,8 @@ void Error_Handler(void);
 #define OUT_LPS_MOSI_GPIO_Port GPIOA
 #define IN_ADC_NTC_Pin LL_GPIO_PIN_4
 #define IN_ADC_NTC_GPIO_Port GPIOC
+#define IN_NTC_RH_Pin LL_GPIO_PIN_5
+#define IN_NTC_RH_GPIO_Port GPIOC
 #define IN_ADC_BAT_Pin LL_GPIO_PIN_0
 #define IN_ADC_BAT_GPIO_Port GPIOB
 #define OUT_RF_Boost_Pin LL_GPIO_PIN_12

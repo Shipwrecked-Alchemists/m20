@@ -62,13 +62,16 @@ static void MX_TIM22_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-float vbat() {
-  LL_ADC_REG_SetSequencerChannels(ADC1, LL_ADC_CHANNEL_8);
+uint16_t read_adc(uint32_t channel) {
+  LL_ADC_REG_SetSequencerChannels(ADC1, channel);
   LL_ADC_REG_StartConversion(ADC1);
   while (!LL_ADC_IsActiveFlag_EOC(ADC1)) {}
-  uint16_t adc = LL_ADC_REG_ReadConversionData12(ADC1);
-  LL_ADC_ClearFlag_EOC(ADC1);
-  return adc * 3.3f / 4095;
+  float adc = LL_ADC_REG_ReadConversionData12(ADC1);
+  return adc;
+}
+
+float vbat() {
+  return read_adc(LL_ADC_CHANNEL_8) * 3.3f / 4095;
 }
 /* USER CODE END 0 */
 
@@ -137,10 +140,16 @@ int main(void)
     n_printf("ℹ️ Pressure : %.4fhPa\n", lps_press());
     n_printf("ℹ️ Temperature : %.2fC\n", lps_temp());
     n_printf("⚡ Vbat %.2f\n", vbat());
-    n_printf("🌡️NTC1 %.2fC\n", ntc_rindex(0));
-    n_printf("🌡️NTC2 %.2fC\n", ntc_rindex(1));
-    n_printf("🌡️NTC3 %.2fC\n", ntc_rindex(2));
+    n_printf("🌡️ NTC1 %.2fC\n", ntc_rindex(0));
+    n_printf("🌡️ NTC2 %.2fC\n", ntc_rindex(1));
+    n_printf("🌡️ NTC3 %.2fC\n", ntc_rindex(2));
 
+    LL_GPIO_SetOutputPin(OUT_NTC_RH_GPIO_Port, OUT_NTC_RH_Pin);
+    LL_mDelay(10);
+    n_printf("🌡️ NTC RH %d\n", read_adc(LL_ADC_CHANNEL_15));
+    n_printf("🌡️ NTC PCB %d\n", read_adc(LL_ADC_CHANNEL_12));
+
+    LL_GPIO_ResetOutputPin(OUT_NTC_RH_GPIO_Port, OUT_NTC_RH_Pin);
     LL_mDelay(1000);
     /* USER CODE END WHILE */
 
@@ -221,7 +230,9 @@ static void MX_ADC_Init(void)
   LL_IOP_GRP1_EnableClock(LL_IOP_GRP1_PERIPH_GPIOB);
   /**ADC GPIO Configuration
   PC0   ------> ADC_IN10
+  PC2   ------> ADC_IN12
   PC4   ------> ADC_IN14
+  PC5   ------> ADC_IN15
   PB0   ------> ADC_IN8
   */
   GPIO_InitStruct.Pin = ADC_PAYLOAD_Pin;
@@ -229,10 +240,20 @@ static void MX_ADC_Init(void)
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
   LL_GPIO_Init(ADC_PAYLOAD_GPIO_Port, &GPIO_InitStruct);
 
+  GPIO_InitStruct.Pin = IN_NTC_PCB_Pin;
+  GPIO_InitStruct.Mode = LL_GPIO_MODE_ANALOG;
+  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
+  LL_GPIO_Init(IN_NTC_PCB_GPIO_Port, &GPIO_InitStruct);
+
   GPIO_InitStruct.Pin = IN_ADC_NTC_Pin;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_ANALOG;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
   LL_GPIO_Init(IN_ADC_NTC_GPIO_Port, &GPIO_InitStruct);
+
+  GPIO_InitStruct.Pin = IN_NTC_RH_Pin;
+  GPIO_InitStruct.Mode = LL_GPIO_MODE_ANALOG;
+  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
+  LL_GPIO_Init(IN_NTC_RH_GPIO_Port, &GPIO_InitStruct);
 
   GPIO_InitStruct.Pin = IN_ADC_BAT_Pin;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_ANALOG;
@@ -253,7 +274,15 @@ static void MX_ADC_Init(void)
 
   /** Configure Regular Channel
   */
+  LL_ADC_REG_SetSequencerChAdd(ADC1, LL_ADC_CHANNEL_12);
+
+  /** Configure Regular Channel
+  */
   LL_ADC_REG_SetSequencerChAdd(ADC1, LL_ADC_CHANNEL_14);
+
+  /** Configure Regular Channel
+  */
+  LL_ADC_REG_SetSequencerChAdd(ADC1, LL_ADC_CHANNEL_15);
 
   /** Common config
   */
@@ -564,6 +593,9 @@ static void MX_GPIO_Init(void)
   LL_GPIO_ResetOutputPin(OUT_LED_GPIO_Port, OUT_LED_Pin);
 
   /**/
+  LL_GPIO_ResetOutputPin(OUT_NTC_RH_GPIO_Port, OUT_NTC_RH_Pin);
+
+  /**/
   LL_GPIO_ResetOutputPin(OUT_LPS_CS_GPIO_Port, OUT_LPS_CS_Pin);
 
   /**/
@@ -621,6 +653,14 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
   LL_GPIO_Init(OUT_LED_GPIO_Port, &GPIO_InitStruct);
+
+  /**/
+  GPIO_InitStruct.Pin = OUT_NTC_RH_Pin;
+  GPIO_InitStruct.Mode = LL_GPIO_MODE_OUTPUT;
+  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
+  LL_GPIO_Init(OUT_NTC_RH_GPIO_Port, &GPIO_InitStruct);
 
   /**/
   GPIO_InitStruct.Pin = IN_IR_Pin;
