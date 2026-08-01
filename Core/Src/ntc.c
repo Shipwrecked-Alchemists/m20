@@ -10,21 +10,17 @@
 float ntc_rindex(int index) {
     if (index > 2) return 0;
 
-    LL_GPIO_SetPinOutputType(ress[index].port_s, ress[index].pin_s, LL_GPIO_OUTPUT_PUSHPULL);
-    LL_GPIO_SetOutputPin(ress[index].port_s, ress[index].pin_s);
+    LL_GPIO_SetPinMode(ress[index].port_s, ress[index].pin_s, LL_GPIO_MODE_OUTPUT);
     if (ress[index].port_p) {
-        LL_GPIO_SetPinOutputType(ress[index].port_p, ress[index].pin_p, LL_GPIO_OUTPUT_PUSHPULL);
-        LL_GPIO_ResetOutputPin(ress[index].port_p, ress[index].pin_p);
+        LL_GPIO_SetPinMode(ress[index].port_p, ress[index].pin_p, LL_GPIO_MODE_OUTPUT);
     }
     LL_mDelay(10);
 
     float adc = read_adc(LL_ADC_CHANNEL_14);
 
-    LL_GPIO_ResetOutputPin(ress[index].port_s, ress[index].pin_s);
-    LL_GPIO_SetPinOutputType(ress[index].port_s, ress[index].pin_s, LL_GPIO_OUTPUT_OPENDRAIN);
+    LL_GPIO_SetPinMode(ress[index].port_s, ress[index].pin_s, LL_GPIO_MODE_INPUT);
     if (ress[index].port_p) {
-        LL_GPIO_SetOutputPin(ress[index].port_p, ress[index].pin_p);
-        LL_GPIO_SetPinOutputType(ress[index].port_p, ress[index].pin_p, LL_GPIO_OUTPUT_OPENDRAIN);
+        LL_GPIO_SetPinMode(ress[index].port_p, ress[index].pin_p, LL_GPIO_MODE_INPUT);
     }
 
     double x = (4095.0 - adc) / adc;

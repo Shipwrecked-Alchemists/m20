@@ -119,7 +119,6 @@ int main(void)
   LL_TIM_EnableIT_CC1(TIM22);
   LL_TIM_CC_EnableChannel(TIM22, LL_TIM_CHANNEL_CH1);
   LL_TIM_EnableCounter(TIM22);
-  LL_ADC_Enable(ADC1);
 
   LL_mDelay(500);
   switch_ubx();
@@ -128,6 +127,14 @@ int main(void)
     if (lps22_init() == 0) break;
     LL_mDelay(100);
   }
+
+  LL_ADC_EnableInternalRegulator(ADC1);
+  LL_mDelay(10);
+  LL_ADC_StartCalibration(ADC1);
+  while (LL_ADC_IsCalibrationOnGoing(ADC1) != 0) {}
+  LL_ADC_Enable(ADC1);
+  while (LL_ADC_IsActiveFlag_ADRDY(ADC1) == 0) {}
+
   n_printf("ℹ️ System initilized\n");
 
   LL_LPUART_EnableIT_RXNE(LPUART1);
@@ -292,7 +299,7 @@ static void MX_ADC_Init(void)
   ADC_REG_InitStruct.DMATransfer = LL_ADC_REG_DMA_TRANSFER_NONE;
   ADC_REG_InitStruct.Overrun = LL_ADC_REG_OVR_DATA_PRESERVED;
   LL_ADC_REG_Init(ADC1, &ADC_REG_InitStruct);
-  LL_ADC_SetSamplingTimeCommonChannels(ADC1, LL_ADC_SAMPLINGTIME_1CYCLE_5);
+  LL_ADC_SetSamplingTimeCommonChannels(ADC1, LL_ADC_SAMPLINGTIME_160CYCLES_5);
   LL_ADC_SetOverSamplingScope(ADC1, LL_ADC_OVS_DISABLE);
   LL_ADC_REG_SetSequencerScanDirection(ADC1, LL_ADC_REG_SEQ_SCAN_DIR_FORWARD);
   LL_ADC_SetCommonFrequencyMode(__LL_ADC_COMMON_INSTANCE(ADC1), LL_ADC_CLOCK_FREQ_MODE_HIGH);
@@ -617,15 +624,6 @@ static void MX_GPIO_Init(void)
   LL_GPIO_ResetOutputPin(OUT_ADF_CE_GPIO_Port, OUT_ADF_CE_Pin);
 
   /**/
-  LL_GPIO_ResetOutputPin(OUT_NTC_475k_GPIO_Port, OUT_NTC_475k_Pin);
-
-  /**/
-  LL_GPIO_ResetOutputPin(OUT_NTC_36k_GPIO_Port, OUT_NTC_36k_Pin);
-
-  /**/
-  LL_GPIO_ResetOutputPin(OUT_NTC_12k_GPIO_Port, OUT_NTC_12k_Pin);
-
-  /**/
   LL_GPIO_ResetOutputPin(OUT_NTC_2M_GPIO_Port, OUT_NTC_2M_Pin);
 
   /**/
@@ -639,6 +637,15 @@ static void MX_GPIO_Init(void)
 
   /**/
   LL_GPIO_SetOutputPin(OUT_POWER_ON_GPIO_Port, OUT_POWER_ON_Pin);
+
+  /**/
+  LL_GPIO_SetOutputPin(OUT_NTC_475k_GPIO_Port, OUT_NTC_475k_Pin);
+
+  /**/
+  LL_GPIO_SetOutputPin(OUT_NTC_36k_GPIO_Port, OUT_NTC_36k_Pin);
+
+  /**/
+  LL_GPIO_SetOutputPin(OUT_NTC_12k_GPIO_Port, OUT_NTC_12k_Pin);
 
   /**/
   GPIO_InitStruct.Pin = IN_BUTTON_Pin;
@@ -761,7 +768,7 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pin = OUT_NTC_475k_Pin;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_OUTPUT;
   GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_OPENDRAIN;
+  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
   LL_GPIO_Init(OUT_NTC_475k_GPIO_Port, &GPIO_InitStruct);
 
@@ -769,7 +776,7 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pin = OUT_NTC_36k_Pin;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_OUTPUT;
   GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_OPENDRAIN;
+  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
   LL_GPIO_Init(OUT_NTC_36k_GPIO_Port, &GPIO_InitStruct);
 
@@ -777,7 +784,7 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pin = OUT_NTC_12k_Pin;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_OUTPUT;
   GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_OPENDRAIN;
+  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
   LL_GPIO_Init(OUT_NTC_12k_GPIO_Port, &GPIO_InitStruct);
 
@@ -785,7 +792,7 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pin = OUT_NTC_2M_Pin;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_OUTPUT;
   GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_OPENDRAIN;
+  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
   LL_GPIO_Init(OUT_NTC_2M_GPIO_Port, &GPIO_InitStruct);
 
@@ -793,7 +800,7 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pin = OUT_NTC_330k_Pin;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_OUTPUT;
   GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_OPENDRAIN;
+  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
   LL_GPIO_Init(OUT_NTC_330k_GPIO_Port, &GPIO_InitStruct);
 
