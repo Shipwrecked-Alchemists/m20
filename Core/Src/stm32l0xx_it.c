@@ -24,6 +24,7 @@
 /* USER CODE BEGIN Includes */
 #include "gps.h"
 #include "printf.h"
+#include "rh.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -66,7 +67,7 @@ uint32_t tim_diff;
 /* External variables --------------------------------------------------------*/
 
 /* USER CODE BEGIN EV */
-
+extern uint32_t tim_overflow;
 /* USER CODE END EV */
 
 /******************************************************************************/
@@ -155,28 +156,13 @@ void SysTick_Handler(void)
 void TIM22_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM22_IRQn 0 */
+  if (LL_TIM_IsActiveFlag_UPDATE(TIM22)) {
+    LL_TIM_ClearFlag_UPDATE(TIM22);
+    tim_overflow++;
+  }
   if (LL_TIM_IsActiveFlag_CC1(TIM22)) {
     LL_TIM_ClearFlag_CC1(TIM22);
-
-    if (tim_tick == 0) {
-      tim1 = LL_TIM_IC_GetCaptureCH1(TIM22);
-    }
-    tim_tick++;
-
-    if (tim_tick > 51) {
-      tim2 = LL_TIM_IC_GetCaptureCH1(TIM22);
-
-      if (tim2 >= tim1)
-        tim_diff = tim2 - tim1;
-      else
-        tim_diff = (0xFFFF - tim1) + tim2 + 1;
-
-      float freq = (2000000.0f * 51) / tim_diff;
-      float hum = -0.1548f * freq + 1037;
-      n_printf("💧 Hum %.1f%%\n", hum);
-
-      tim_tick = 0;
-    }
+    update_rh();
   }
 
   /* USER CODE END TIM22_IRQn 0 */

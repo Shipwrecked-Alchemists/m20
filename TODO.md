@@ -4,7 +4,7 @@
 | LPS22HB B&T   | V      | Press Temp      |
 | Vbat          | V      | Battery Voltage |
 | Radio AD7012B | X      |                 |
-| Humidity      | ~      | Need cal + temp |
+| Humidity      | V      |                 |
 | NTC           | V      | Need validation |
 | IR            | X      |                 |
 | UART          | V      |                 |

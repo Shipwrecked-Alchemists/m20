@@ -25,6 +25,7 @@
 #include "lps22.h"
 #include "ntc.h"
 #include "printf.h"
+#include "rh.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -144,6 +145,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+    n_printf("💧 Humidity %.1f%%\n", get_humidity());
     n_printf("ℹ️ Pressure : %.4fhPa\n", lps_press());
     n_printf("ℹ️ Temperature : %.2fC\n", lps_temp());
     n_printf("⚡ Vbat %.2f\n", vbat());
@@ -153,7 +155,6 @@ int main(void)
 
     LL_GPIO_SetOutputPin(OUT_NTC_RH_GPIO_Port, OUT_NTC_RH_Pin);
     LL_mDelay(10);
-    n_printf("🌡️ NTC RH %d\n", read_adc(LL_ADC_CHANNEL_15));
     n_printf("🌡️ NTC PCB %d\n", read_adc(LL_ADC_CHANNEL_12));
 
     LL_GPIO_ResetOutputPin(OUT_NTC_RH_GPIO_Port, OUT_NTC_RH_Pin);
