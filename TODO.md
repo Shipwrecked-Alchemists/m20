@@ -1,14 +1,3 @@
-| Component     | Status | Description     |
-|---------------|--------|-----------------|
-| GPS M10M      | V      | POS GS TIME     |
-| LPS22HB B&T   | V      | Press Temp      |
-| Vbat          | V      | Battery Voltage |
-| Radio AD7012B | X      |                 |
-| Humidity      | V      |                 |
-| NTC           | V      | Need validation |
-| IR            | X      |                 |
-| UART          | V      |                 |
-
 ```c
 typedef struct m20_frame {
     uint8_t len;
