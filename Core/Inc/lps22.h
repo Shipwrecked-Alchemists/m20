@@ -14,8 +14,10 @@
 #define LPS_CTRL_REG2 0x11
 #define LPS_RES_CONF 0x1A
 
+#if ENABLE_LPS
 int lps22_init();
 float lps_temp();
 float lps_press();
+#endif
 
 #endif

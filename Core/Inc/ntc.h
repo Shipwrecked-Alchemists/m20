@@ -4,6 +4,7 @@
 #include "stm32l051xx.h"
 
 
+#if ENABLE_NTC
 static struct {
     GPIO_TypeDef *port_s; // series
     uint32_t pin_s;
@@ -30,5 +31,6 @@ static struct {
 };
 
 float ntc_rindex(int index);
+#endif
 
 #endif
