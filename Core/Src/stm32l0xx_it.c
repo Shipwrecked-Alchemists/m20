@@ -44,14 +44,18 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
+#if ENABLE_GPS
 uint8_t gps_buf[128];
 int gps_idx = 0;
 int to_read = 0;
 int reading = 0;
+#endif
 
+#if ENABLE_HUMIDITY
 int tim_tick = 0;
 uint32_t tim1, tim2;
 uint32_t tim_diff;
+#endif
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -156,6 +160,7 @@ void SysTick_Handler(void)
 void TIM22_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM22_IRQn 0 */
+#if ENABLE_HUMIDITY
   if (LL_TIM_IsActiveFlag_UPDATE(TIM22)) {
     LL_TIM_ClearFlag_UPDATE(TIM22);
     tim_overflow++;
@@ -165,6 +170,7 @@ void TIM22_IRQHandler(void)
     update_rh();
   }
 
+#endif
   /* USER CODE END TIM22_IRQn 0 */
   /* USER CODE BEGIN TIM22_IRQn 1 */
 
@@ -177,6 +183,7 @@ void TIM22_IRQHandler(void)
 void LPUART1_IRQHandler(void)
 {
   /* USER CODE BEGIN LPUART1_IRQn 0 */
+#if ENABLE_GPS
   if (LL_LPUART_IsActiveFlag_RXNE(LPUART1) && LL_LPUART_IsEnabledIT_RXNE(LPUART1)) {
     uint8_t c = LL_LPUART_ReceiveData8(LPUART1);
 
@@ -209,6 +216,7 @@ void LPUART1_IRQHandler(void)
   if (LL_LPUART_IsActiveFlag_ORE(LPUART1)) {
     LL_LPUART_ClearFlag_ORE(LPUART1);
   }
+#endif
   /* USER CODE END LPUART1_IRQn 0 */
   /* USER CODE BEGIN LPUART1_IRQn 1 */
 

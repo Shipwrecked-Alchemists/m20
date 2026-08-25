@@ -71,9 +71,11 @@ uint16_t read_adc(uint32_t channel) {
   return adc;
 }
 
+#if ENABLE_VBAT
 float vbat() {
   return read_adc(LL_ADC_CHANNEL_8) * 3.3f / 4095;
 }
+#endif
 /* USER CODE END 0 */
 
 /**
@@ -115,19 +117,29 @@ int main(void)
   MX_LPUART1_UART_Init();
   MX_TIM22_Init();
   /* USER CODE BEGIN 2 */
+#if ENABLE_GPS
   LL_LPUART_Enable(LPUART1);
+#endif
+#if ENABLE_LPS
   LL_SPI_Enable(SPI1);
+#endif
+#if ENABLE_HUMIDITY
   LL_TIM_EnableIT_CC1(TIM22);
   LL_TIM_CC_EnableChannel(TIM22, LL_TIM_CHANNEL_CH1);
   LL_TIM_EnableCounter(TIM22);
 
+#endif
   LL_mDelay(500);
+#if ENABLE_GPS
   switch_ubx();
+#endif
+#if ENABLE_LPS
   for (int i = 0; i < 5; i++) {
     n_printf("⌛ LPS try %d ...\n", i);
     if (lps22_init() == 0) break;
     LL_mDelay(100);
   }
+#endif
 
   LL_ADC_EnableInternalRegulator(ADC1);
   LL_mDelay(10);
@@ -138,20 +150,30 @@ int main(void)
 
   n_printf("ℹ️ System initilized\n");
 
+#if ENABLE_GPS
   LL_LPUART_EnableIT_RXNE(LPUART1);
+#endif
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+#if ENABLE_HUMIDITY
     n_printf("💧 Humidity %.1f%%\n", get_humidity());
+#endif
+#if ENABLE_LPS
     n_printf("ℹ️ Pressure : %.4fhPa\n", lps_press());
     n_printf("ℹ️ Temperature : %.2fC\n", lps_temp());
+#endif
+#if ENABLE_VBAT
     n_printf("⚡ Vbat %.2f\n", vbat());
+#endif
+#if ENABLE_NTC
     n_printf("🌡️ NTC1 %.2fC\n", ntc_rindex(0));
     n_printf("🌡️ NTC2 %.2fC\n", ntc_rindex(1));
     n_printf("🌡️ NTC3 %.2fC\n", ntc_rindex(2));
+#endif
 
     LL_GPIO_SetOutputPin(OUT_NTC_RH_GPIO_Port, OUT_NTC_RH_Pin);
     LL_mDelay(10);
