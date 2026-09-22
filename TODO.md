@@ -1,6 +1,6 @@
 ```c
 typedef struct m20_frame {
-    uint8_t len;
+    uint32_t sync; // 0xb00b5420
     uint8_t seq;
 
     uint32_t time; // Unix timestamp
@@ -13,8 +13,8 @@ typedef struct m20_frame {
     uint16_t vel_v; // Vertical velocity
     uint8_t heading; // Heading @2deg
 
-    uint16_t temp;
-    uint16_t humidity;
+    uint16_t temp;     // @0.01
+    uint16_t humidity; // @0.01
 
     uint16_t crc;
 } m20_frame_t;

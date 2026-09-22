@@ -21,6 +21,9 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <sys/types.h>
+
+#include "adf.h"
 #include "gps.h"
 #include "lps22.h"
 #include "ntc.h"
@@ -46,7 +49,37 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+typedef struct m20_frame {
+  uint32_t sync; // 0xb00b5420
+  uint8_t seq;
 
+  uint32_t time; // Unix timestamp
+
+  uint32_t lat;
+  uint32_t lon;
+  uint16_t alt; // 0.1m
+
+  uint16_t vel_h; // Horizontal velocity
+  uint16_t vel_v; // Vertical velocity
+  uint8_t heading; // Heading @2deg
+
+  uint16_t temp;     // @0.01
+  uint16_t humidity; // @0.01
+
+  uint16_t crc;
+} __attribute__((packed)) m20_frame_t;
+
+uint8_t seq = 0;
+
+extern struct {
+  uint32_t time; // Unix timestamp
+
+  uint32_t lat;
+  uint32_t lon;
+  uint16_t alt;
+
+  uint16_t vel_h;
+} frame_part;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -57,6 +90,7 @@ static void MX_SPI1_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_LPUART1_UART_Init(void);
 static void MX_TIM22_Init(void);
+static void MX_TIM21_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -76,6 +110,14 @@ float vbat() {
   return read_adc(LL_ADC_CHANNEL_8) * 3.3f / 4095;
 }
 #endif
+
+uint16_t crc16(uint8_t *data, size_t len) {
+  uint16_t crc = 0x0000;
+  for (size_t i = 0; i < len; i++) {
+    crc = crc * 0x1337 + data[i];
+  }
+  return crc;
+}
 /* USER CODE END 0 */
 
 /**
@@ -116,6 +158,7 @@ int main(void)
   MX_USART1_UART_Init();
   MX_LPUART1_UART_Init();
   MX_TIM22_Init();
+  MX_TIM21_Init();
   /* USER CODE BEGIN 2 */
 #if ENABLE_GPS
   LL_LPUART_Enable(LPUART1);
@@ -140,6 +183,7 @@ int main(void)
     LL_mDelay(100);
   }
 #endif
+  adf_init();
 
   LL_ADC_EnableInternalRegulator(ADC1);
   LL_mDelay(10);
@@ -157,8 +201,8 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
+  adf_on(433500000.f, 31);
+  while (1) {
 #if ENABLE_HUMIDITY
     n_printf("💧 Humidity %.1f%%\n", get_humidity());
 #endif
@@ -180,6 +224,28 @@ int main(void)
     n_printf("🌡️ NTC PCB %d\n", read_adc(LL_ADC_CHANNEL_12));
 
     LL_GPIO_ResetOutputPin(OUT_NTC_RH_GPIO_Port, OUT_NTC_RH_Pin);
+
+    struct m20_frame frame = {0};
+    frame = (struct m20_frame) {
+      .sync = 0xb00b5420,
+      .seq = seq++,
+#if ENABLE_GPS
+      .time = frame_part.time,
+      .lat = frame_part.lat,
+      .lon = frame_part.lon,
+      .alt = frame_part.alt,
+      .vel_h = frame_part.vel_h,
+      .vel_v = 0,
+      .heading = 0,
+#endif
+#if ENABLE_NTC //TODO: a tester
+      .temp = 0,
+#endif
+#if ENABLE_HUMIDITY
+      .humidity = (int16_t)(get_humidity()*100),
+#endif
+      .crc = crc16((uint8_t *)&frame, 28),
+    };
     LL_mDelay(1000);
     /* USER CODE END WHILE */
 
@@ -387,7 +453,7 @@ static void MX_LPUART1_UART_Init(void)
   LL_GPIO_Init(UART_GPS_RX_GPIO_Port, &GPIO_InitStruct);
 
   /* LPUART1 interrupt Init */
-  NVIC_SetPriority(LPUART1_IRQn, 0);
+  NVIC_SetPriority(LPUART1_IRQn, 1);
   NVIC_EnableIRQ(LPUART1_IRQn);
 
   /* USER CODE BEGIN LPUART1_Init 1 */
@@ -537,6 +603,45 @@ static void MX_SPI1_Init(void)
 }
 
 /**
+  * @brief TIM21 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM21_Init(void)
+{
+
+  /* USER CODE BEGIN TIM21_Init 0 */
+
+  /* USER CODE END TIM21_Init 0 */
+
+  LL_TIM_InitTypeDef TIM_InitStruct = {0};
+
+  /* Peripheral clock enable */
+  LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_TIM21);
+
+  /* TIM21 interrupt Init */
+  NVIC_SetPriority(TIM21_IRQn, 0);
+  NVIC_EnableIRQ(TIM21_IRQn);
+
+  /* USER CODE BEGIN TIM21_Init 1 */
+
+  /* USER CODE END TIM21_Init 1 */
+  TIM_InitStruct.Prescaler = 0;
+  TIM_InitStruct.CounterMode = LL_TIM_COUNTERMODE_UP;
+  TIM_InitStruct.Autoreload = 65535;
+  TIM_InitStruct.ClockDivision = LL_TIM_CLOCKDIVISION_DIV1;
+  LL_TIM_Init(TIM21, &TIM_InitStruct);
+  LL_TIM_DisableARRPreload(TIM21);
+  LL_TIM_SetClockSource(TIM21, LL_TIM_CLOCKSOURCE_INTERNAL);
+  LL_TIM_SetTriggerOutput(TIM21, LL_TIM_TRGO_RESET);
+  LL_TIM_DisableMasterSlaveMode(TIM21);
+  /* USER CODE BEGIN TIM21_Init 2 */
+
+  /* USER CODE END TIM21_Init 2 */
+
+}
+
+/**
   * @brief TIM22 Initialization Function
   * @param None
   * @retval None
@@ -568,7 +673,7 @@ static void MX_TIM22_Init(void)
   LL_GPIO_Init(IN_HUMIDITY_GPIO_Port, &GPIO_InitStruct);
 
   /* TIM22 interrupt Init */
-  NVIC_SetPriority(TIM22_IRQn, 0);
+  NVIC_SetPriority(TIM22_IRQn, 1);
   NVIC_EnableIRQ(TIM22_IRQn);
 
   /* USER CODE BEGIN TIM22_Init 1 */
@@ -624,9 +729,6 @@ static void MX_GPIO_Init(void)
   LL_GPIO_ResetOutputPin(OUT_ADF_TX_TIM__GPIO_Port, OUT_ADF_TX_TIM__Pin);
 
   /**/
-  LL_GPIO_ResetOutputPin(OUT_RADIO_EN_GPIO_Port, OUT_RADIO_EN_Pin);
-
-  /**/
   LL_GPIO_ResetOutputPin(OUT_ADF_CLK_GPIO_Port, OUT_ADF_CLK_Pin);
 
   /**/
@@ -649,6 +751,9 @@ static void MX_GPIO_Init(void)
 
   /**/
   LL_GPIO_SetOutputPin(OUT_GPS_ON_GPIO_Port, OUT_GPS_ON_Pin);
+
+  /**/
+  LL_GPIO_SetOutputPin(OUT_RADIO_EN_GPIO_Port, OUT_RADIO_EN_Pin);
 
   /**/
   LL_GPIO_SetOutputPin(OUT_POWER_ON_GPIO_Port, OUT_POWER_ON_Pin);

@@ -56,6 +56,14 @@ int tim_tick = 0;
 uint32_t tim1, tim2;
 uint32_t tim_diff;
 #endif
+
+int need_to_send = 0;
+uint8_t *send_buffer;
+size_t send_buffer_size;
+
+int tim_state = 0;
+int byte_idx = 0;
+int bit_idx = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -153,6 +161,52 @@ void SysTick_Handler(void)
 /* For the available peripheral interrupt handler names,                      */
 /* please refer to the startup file (startup_stm32l0xx.s).                    */
 /******************************************************************************/
+
+/**
+  * @brief This function handles TIM21 global interrupt.
+  */
+void TIM21_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM21_IRQn 0 */
+  if (LL_TIM_IsActiveFlag_UPDATE(TIM21)) {
+    LL_TIM_ClearFlag_UPDATE(TIM21);
+
+    if (need_to_send) {
+      if (tim_state == 0) { // Preamble
+        if (bit_idx % 2) LL_GPIO_SetOutputPin(OUT_ADF_TX_TIM__GPIO_Port, OUT_ADF_TX_TIM__Pin);
+        else LL_GPIO_ResetOutputPin(OUT_ADF_TX_TIM__GPIO_Port, OUT_ADF_TX_TIM__Pin);
+      } else if (tim_state == 1) {
+        int bit = (send_buffer[byte_idx] >> (7-bit_idx)) & 1;
+        if (bit) LL_GPIO_SetOutputPin(OUT_ADF_TX_TIM__GPIO_Port, OUT_ADF_TX_TIM__Pin);
+        else LL_GPIO_ResetOutputPin(OUT_ADF_TX_TIM__GPIO_Port, OUT_ADF_TX_TIM__Pin);
+      }
+    }
+    bit_idx++;
+    if (bit_idx == 8) {
+      byte_idx++;
+      bit_idx = 0;
+    }
+
+    if (tim_state == 0) {
+      if (byte_idx == 2) {
+        byte_idx = 0;
+        tim_state = 1;
+      }
+    } else if (tim_state == 1) {
+      if (byte_idx == send_buffer_size) {
+        byte_idx = 0;
+        bit_idx = 0;
+        tim_state = 0;
+        need_to_send = 0;
+      }
+    }
+
+  }
+  /* USER CODE END TIM21_IRQn 0 */
+  /* USER CODE BEGIN TIM21_IRQn 1 */
+
+  /* USER CODE END TIM21_IRQn 1 */
+}
 
 /**
   * @brief This function handles TIM22 global interrupt.
