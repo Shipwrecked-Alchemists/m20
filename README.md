@@ -7,7 +7,7 @@ Any resemblance to AI generated or slop code is purely coincidental.
 | GPS M10M      | ✔️     | Pos Speed Time  |
 | LPS22HB B&T   | ✔️     | Pressure Temp   |
 | Vbat          | ✔️     | Battery Voltage |
-| Radio AD7012B | 🟥     |                 |
+| Radio AD7012B | ✔️     | FSK 2400        |
 | Humidity      | ✔️     | Calibrated Hum  |
 | NTC           | ✔️     | Calibrated Temp |
 | IR            | 🟥     |                 |
@@ -24,6 +24,7 @@ Components can be customized in `Makefile`.
 
 | Module | Code | Data | BSS | **Total** |
 | ------ | ---- | ---- | --- | --------- |
+| RF   | 1152 | 0 | 56 | **1208** |
 | Humidity | 3476 | 0 | 8 | **3484** |
 | VBat | 220 | 0 | 0 | **220** |
 | Temp | 604 | 0 | 0 | **604** |

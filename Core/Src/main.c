@@ -81,9 +81,11 @@ extern struct {
   uint16_t vel_h;
 } frame_part;
 
+#if ENABLE_RF
 extern int need_to_send;
 extern uint8_t *send_buffer;
 extern size_t send_buffer_size;
+#endif
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -187,7 +189,11 @@ int main(void)
     LL_mDelay(100);
   }
 #endif
+#if ENABLE_RF
   adf_init();
+  LL_TIM_EnableIT_UPDATE(TIM21);
+  LL_TIM_EnableCounter(TIM21);
+#endif
 
   LL_ADC_EnableInternalRegulator(ADC1);
   LL_mDelay(10);
@@ -205,9 +211,9 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+#if ENABLE_RF
   adf_on(433500000.f, 31);
-  LL_TIM_EnableIT_UPDATE(TIM21);
-  LL_TIM_EnableCounter(TIM21);
+#endif
   while (1) {
 #if ENABLE_HUMIDITY
     n_printf("💧 Humidity %.1f%%\n", get_humidity());
@@ -253,11 +259,13 @@ int main(void)
       .crc = crc16((uint8_t *)&frame, 28),
     };
 
+#if ENABLE_RF
     send_buffer = (uint8_t*)&frame;
     send_buffer_size = sizeof(frame);
 
     LL_GPIO_ResetOutputPin(OUT_RF_Boost_GPIO_Port, OUT_RF_Boost_Pin);
     need_to_send = 1;
+#endif
     LL_mDelay(1000);
     /* USER CODE END WHILE */
 

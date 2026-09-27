@@ -57,6 +57,7 @@ uint32_t tim1, tim2;
 uint32_t tim_diff;
 #endif
 
+#if ENABLE_RF
 int need_to_send = 0;
 uint8_t *send_buffer;
 size_t send_buffer_size;
@@ -64,6 +65,7 @@ size_t send_buffer_size;
 int tim_state = 0;
 int byte_idx = 0;
 int bit_idx = 0;
+#endif
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -168,6 +170,7 @@ void SysTick_Handler(void)
 void TIM21_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM21_IRQn 0 */
+#if ENABLE_RF
   if (LL_TIM_IsActiveFlag_UPDATE(TIM21)) {
     LL_TIM_ClearFlag_UPDATE(TIM21);
 
@@ -202,6 +205,7 @@ void TIM21_IRQHandler(void)
       }
     }
   }
+#endif
   /* USER CODE END TIM21_IRQn 0 */
   /* USER CODE BEGIN TIM21_IRQn 1 */
 

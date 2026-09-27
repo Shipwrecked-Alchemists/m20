@@ -30,6 +30,7 @@ ENABLE_LPS      ?= 0
 ENABLE_NTC      ?= 0
 ENABLE_VBAT     ?= 0
 ENABLE_HUMIDITY ?= 0
+ENABLE_RF       ?= 0
 
 #######################################
 # paths
@@ -46,7 +47,6 @@ Core/Src/main.c \
 Core/Src/stm32l0xx_it.c \
 Core/Src/system_stm32l0xx.c \
 Core/Src/sysmem.c \
-Core/Src/adf.c \
 Core/Src/syscalls.c \
 Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_ll_gpio.c \
 Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_ll_adc.c \
@@ -74,6 +74,9 @@ C_SOURCES += Core/Src/ntc.c
 endif
 ifeq ($(ENABLE_HUMIDITY), 1)
 C_SOURCES += Core/Src/rh.c
+endif
+ifeq ($(ENABLE_RF), 1)
+C_SOURCES += Core/Src/adf.c
 endif
 
 # ASM sources
@@ -148,7 +151,8 @@ C_DEFS += \
 	-DENABLE_LPS=$(ENABLE_LPS) \
 	-DENABLE_NTC=$(ENABLE_NTC) \
 	-DENABLE_VBAT=$(ENABLE_VBAT) \
-	-DENABLE_HUMIDITY=$(ENABLE_HUMIDITY)
+	-DENABLE_HUMIDITY=$(ENABLE_HUMIDITY) \
+	-DENABLE_RF=$(ENABLE_RF) \
 
 # AS includes
 AS_INCLUDES = 
