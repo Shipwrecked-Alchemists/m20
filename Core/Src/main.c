@@ -80,6 +80,10 @@ extern struct {
 
   uint16_t vel_h;
 } frame_part;
+
+extern int need_to_send;
+extern uint8_t *send_buffer;
+extern size_t send_buffer_size;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -248,13 +252,11 @@ int main(void)
 #endif
       .crc = crc16((uint8_t *)&frame, 28),
     };
-    extern int need_to_send;
-    extern uint8_t *send_buffer;
-    extern size_t send_buffer_size;
 
     send_buffer = (uint8_t*)&frame;
     send_buffer_size = sizeof(frame);
 
+    LL_GPIO_ResetOutputPin(OUT_RF_Boost_GPIO_Port, OUT_RF_Boost_Pin);
     need_to_send = 1;
     LL_mDelay(1000);
     /* USER CODE END WHILE */

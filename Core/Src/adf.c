@@ -83,7 +83,7 @@ void adf_write_register(uint32_t data) {
 void adf_write_r0() {
     uint32_t data = 0x0 |
         (adf_r0.error_correction & 0x7FF) << 2 | (adf_r0.r_div & 0xF) << 13 |
-        adf_r0.crystal_doubler << 17 | adf_r0.xoeb << 18 |
+        (adf_r0.crystal_doubler & 0x1) << 17 | (adf_r0.xoeb & 0x1) << 18 |
         (adf_r0.clock_out_div & 0xF) << 19 | (adf_r0.vco_adjust & 0x3) << 23 |
         (adf_r0.output_div & 0x3) << 25;
     adf_write_register(data);

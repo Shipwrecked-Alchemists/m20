@@ -197,6 +197,7 @@ void TIM21_IRQHandler(void)
           bit_idx = 0;
           tim_state = 0;
           need_to_send = 0;
+          LL_GPIO_SetOutputPin(OUT_RF_Boost_GPIO_Port, OUT_RF_Boost_Pin);
         }
       }
     }
