@@ -202,6 +202,8 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   adf_on(433500000.f, 31);
+  LL_TIM_EnableIT_UPDATE(TIM21);
+  LL_TIM_EnableCounter(TIM21);
   while (1) {
 #if ENABLE_HUMIDITY
     n_printf("💧 Humidity %.1f%%\n", get_humidity());
@@ -246,6 +248,14 @@ int main(void)
 #endif
       .crc = crc16((uint8_t *)&frame, 28),
     };
+    extern int need_to_send;
+    extern uint8_t *send_buffer;
+    extern size_t send_buffer_size;
+
+    send_buffer = (uint8_t*)&frame;
+    send_buffer_size = sizeof(frame);
+
+    need_to_send = 1;
     LL_mDelay(1000);
     /* USER CODE END WHILE */
 
@@ -628,10 +638,10 @@ static void MX_TIM21_Init(void)
   /* USER CODE END TIM21_Init 1 */
   TIM_InitStruct.Prescaler = 0;
   TIM_InitStruct.CounterMode = LL_TIM_COUNTERMODE_UP;
-  TIM_InitStruct.Autoreload = 65535;
+  TIM_InitStruct.Autoreload = 3332;
   TIM_InitStruct.ClockDivision = LL_TIM_CLOCKDIVISION_DIV1;
   LL_TIM_Init(TIM21, &TIM_InitStruct);
-  LL_TIM_DisableARRPreload(TIM21);
+  LL_TIM_EnableARRPreload(TIM21);
   LL_TIM_SetClockSource(TIM21, LL_TIM_CLOCKSOURCE_INTERNAL);
   LL_TIM_SetTriggerOutput(TIM21, LL_TIM_TRGO_RESET);
   LL_TIM_DisableMasterSlaveMode(TIM21);
