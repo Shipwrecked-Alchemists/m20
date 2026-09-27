@@ -180,27 +180,26 @@ void TIM21_IRQHandler(void)
         if (bit) LL_GPIO_SetOutputPin(OUT_ADF_TX_TIM__GPIO_Port, OUT_ADF_TX_TIM__Pin);
         else LL_GPIO_ResetOutputPin(OUT_ADF_TX_TIM__GPIO_Port, OUT_ADF_TX_TIM__Pin);
       }
-    }
-    bit_idx++;
-    if (bit_idx == 8) {
-      byte_idx++;
-      bit_idx = 0;
-    }
-
-    if (tim_state == 0) {
-      if (byte_idx == 2) {
-        byte_idx = 0;
-        tim_state = 1;
-      }
-    } else if (tim_state == 1) {
-      if (byte_idx == send_buffer_size) {
-        byte_idx = 0;
+      bit_idx++;
+      if (bit_idx == 8) {
+        byte_idx++;
         bit_idx = 0;
-        tim_state = 0;
-        need_to_send = 0;
+      }
+
+      if (tim_state == 0) {
+        if (byte_idx == 16) {
+          byte_idx = 0;
+          tim_state = 1;
+        }
+      } else if (tim_state == 1) {
+        if (byte_idx == send_buffer_size) {
+          byte_idx = 0;
+          bit_idx = 0;
+          tim_state = 0;
+          need_to_send = 0;
+        }
       }
     }
-
   }
   /* USER CODE END TIM21_IRQn 0 */
   /* USER CODE BEGIN TIM21_IRQn 1 */
