@@ -195,12 +195,13 @@ void TIM21_IRQHandler(void)
           tim_state = 1;
         }
       } else if (tim_state == 1) {
-        if (byte_idx == send_buffer_size) {
+        if (byte_idx == send_buffer_size && bit_idx == 1) { //one symbol after packet
           byte_idx = 0;
           bit_idx = 0;
           tim_state = 0;
           need_to_send = 0;
           LL_GPIO_SetOutputPin(OUT_RF_Boost_GPIO_Port, OUT_RF_Boost_Pin);
+          LL_GPIO_ResetOutputPin(OUT_ADF_TX_TIM__GPIO_Port, OUT_ADF_TX_TIM__Pin);
         }
       }
     }

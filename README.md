@@ -7,7 +7,7 @@ Any resemblance to AI generated or slop code is purely coincidental.
 | GPS M10M      | ✔️     | Pos Speed Time  |
 | LPS22HB B&T   | ✔️     | Pressure Temp   |
 | Vbat          | ✔️     | Battery Voltage |
-| Radio AD7012B | ✔️     | FSK 2400        |
+| Radio AD7012B | ✔️     | FSK 2400 incomplete |
 | Humidity      | ✔️     | Calibrated Hum  |
 | NTC           | ✔️     | Calibrated Temp |
 | IR            | 🟥     |                 |

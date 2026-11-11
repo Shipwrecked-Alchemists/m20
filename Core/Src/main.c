@@ -256,8 +256,8 @@ int main(void)
 #if ENABLE_HUMIDITY
       .humidity = (int16_t)(get_humidity()*100),
 #endif
-      .crc = crc16((uint8_t *)&frame, 28),
     };
+    frame.crc = crc16((uint8_t *)&frame, 28),
 
 #if ENABLE_RF
     send_buffer = (uint8_t*)&frame;
